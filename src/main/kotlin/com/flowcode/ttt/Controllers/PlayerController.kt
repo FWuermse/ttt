@@ -12,8 +12,10 @@ class PlayerController(val playerService: PlayerService) {
             playerService.searchPlayer(name)
 
     @PostMapping("/player")
-    fun create(@RequestBody player: Player) {
-        playerService.createPlayer(player)
-    }
+    fun create(@RequestBody player: Player) =
+            playerService.createPlayer(player)
 
+    @DeleteMapping("/player")
+    fun delete(@RequestParam(value = "id") id: String) =
+            playerService.deletePlayer(id)
 }

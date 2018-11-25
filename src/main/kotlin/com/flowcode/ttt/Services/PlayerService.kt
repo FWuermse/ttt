@@ -3,6 +3,8 @@ package com.flowcode.ttt.Services
 import com.flowcode.ttt.POJOs.Player
 import com.flowcode.ttt.Repositories.PlayerRepository
 import org.springframework.stereotype.Service
+import java.lang.Exception
+import java.util.*
 
 @Service
 class PlayerService(val playerRepository: PlayerRepository) {
@@ -14,4 +16,15 @@ class PlayerService(val playerRepository: PlayerRepository) {
     fun createPlayer(player: Player) {
         playerRepository.save(player)
     }
+
+    fun deletePlayer(id: String) {
+        val player: Optional<Player> = playerRepository.findById(id)
+        if (player.isPresent)
+            playerRepository.delete(player.get())
+        else
+            throw Exception("User to delete was not found.")
+    }
+
+    fun getPlayer(id: String): Player =
+            playerRepository.findById(id).get()
 }
