@@ -8,7 +8,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-               sh 'comming soon'
+               sh 'echo comming soon'
             }
         }
     }
