@@ -1,9 +1,8 @@
 pipeline {
-    agent any
     stages {
         stage('Create folder') {
             steps {
-                sh 'mkdir build'
+                sh 'echo hi'
             }
         }
         stage('Test') {
