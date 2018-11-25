@@ -15,7 +15,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-               sh 'comming ssoon'
+               sh 'comming soon'
             }
         }
     }
