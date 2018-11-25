@@ -2,7 +2,7 @@ pipeline {
     stages {
         stage('Create folder') {
             steps {
-                sh 'echo hi'
+                sh 'echo hii'
             }
         }
         stage('Test') {
