@@ -1,9 +1,9 @@
 pipeline {
     agent any
     stages {
-        stage('Create folder') {
+        stage('Build') {
             steps {
-                sh "mkdir -p output"
+                sh 'sudo docker build -t ttt .'
             }
         }
         stage('Deploy') {
