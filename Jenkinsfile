@@ -1,7 +1,7 @@
 pipeline {
     agent any
     stages {
-        stage('Create ffolder') {
+        stage('Create folder') {
             steps {
                 sh 'echo hi'
             }
