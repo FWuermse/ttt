@@ -8,8 +8,6 @@ pipeline {
         }
         stage('Build') {
             steps {
-                sh 'sudo docker stop ttt_api && sudo docker rm ttt_api'
-                sh 'sudo docker rmi ttt_api'
                 sh 'sudo docker build -t ttt_api .'
             }
         }
