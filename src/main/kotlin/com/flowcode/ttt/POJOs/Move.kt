@@ -7,9 +7,10 @@ import javax.persistence.*
 class Move(
         @ManyToOne(cascade = [CascadeType.ALL]) @JoinColumn val player: Player,
         @ManyToOne(cascade = [CascadeType.ALL]) @JoinColumn val game: Game,
-        val boardNumber: Char,
         val boardRow: Int,
         val boardColumn: Int,
+        val fieldRow: Int,
+        val fieldColumn: Int,
         @Id @GeneratedValue val id: Long? = null,
         val created: LocalDateTime = LocalDateTime.now()
 )

@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.*;
 class GameController(val gameService: GameService) {
 
     @PostMapping("/create")
-    fun create(@RequestParam(value = "id") id: String) =
-            gameService.create(id)
+    fun create(@RequestParam(value = "playerId") playerId: String) =
+            gameService.create(playerId)
 
     @GetMapping("/join")
     fun join(@RequestParam(value = "playerId") playerId: String,
