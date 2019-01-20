@@ -17,8 +17,13 @@ class MoveService(val gameRepository: GameRepository, val moveRepository: MoveRe
             validatePlayer(playerId, game.get())
             validateMoveRedundancy(move)
             validateMoveInWonField(move)
+            validateMoveInPermittedField(move)
         } else
             throw Exception("This game does not exist anymore. Please refresh your browser.")
+    }
+
+    private fun validateMoveInPermittedField(move: Move) {
+        moveRepository.findLastByGameOrderByCreatedDesc(move.game)
     }
 
     fun validatePlayer(playerId: String, game: Game) {
@@ -35,50 +40,52 @@ class MoveService(val gameRepository: GameRepository, val moveRepository: MoveRe
     }
 
     fun validateMoveInWonField(move: Move) {
-        var bigField = MutableList(3) {MutableList(3) {MutableList(3) {MutableList(3) {false}}}}
-        for (move: Move in moveRepository.findAllByPlayerAndGame(move.player, move.game)) {
-            bigField[move.fieldRow][move.fieldColumn][move.fieldRow][move.fieldColumn] = true
-        }
-        var smallField: MutableList<MutableList<Boolean>> = bigField[move.fieldColumn][move.fieldRow]
+        val allMoves = moveRepository.findAllByGameAndBoardRowAndBoardColumn(move.game, move.boardRow, move.boardColumn)
+        val firstPlayerMoves = moveRepository.findAllByPlayerAndGameAndBoardRowAndBoardColumn(move.player, move.game, move.boardRow, move.boardColumn)
+        val secondPlayerMoves = allMoves.filterNot { firstPlayerMoves.contains(it) }
+
+        validateFirstPlayersMoves(firstPlayerMoves, move)
+        validateSecondPlayerMoves(secondPlayerMoves, move)
+    }
+
+    fun validateSecondPlayerMoves(moves: List<Move> ,move: Move) {
+        val smallField: MutableList<MutableList<Boolean>> = MutableList(3) { MutableList(3) { false } }
+        moves.forEach {
+            smallField[it.fieldRow][it.fieldColumn] = true }
         if (squareWin(smallField) || reverseSquaredWin(smallField) || straightWin(smallField))
-            throw Exception("This field has already been won")
+            throw Exception("This field has already been won by your opponent")
+    }
+
+    fun validateFirstPlayersMoves(moves: List<Move>, move: Move) {
+        val smallField: MutableList<MutableList<Boolean>> = MutableList(3) { MutableList(3) { false } }
+        moveRepository.findAllByPlayerAndGameAndBoardRowAndBoardColumn(move.player, move.game, move.boardRow, move.boardColumn).forEach {
+            smallField[it.fieldRow][it.fieldColumn] = true
+        }
+        if (squareWin(smallField) || reverseSquaredWin(smallField) || straightWin(smallField))
+            throw Exception("You already won this field")
     }
 
     fun squareWin(smallField: MutableList<MutableList<Boolean>>): Boolean {
-        var index: Int = 0
-        var amount: Int = 0
-
-        while (index < 3) {
-            if (smallField[index][index]) {
-                amount ++
-            }
-            index ++
-        }
-        return amount > 2
+        return (0..2).filter{ index -> smallField[index][index] }.size > 2
     }
 
     fun reverseSquaredWin(smallField: MutableList<MutableList<Boolean>>): Boolean {
-        var index: Int = 0
-        var reverseIndex: Int = 2
-        var amount: Int = 0
+        return (0..2).filter { row -> smallField[row][getColumn(row)] }.size > 2
+    }
 
-        while (index < 3) {
-            if (smallField[index][reverseIndex]) {
-                amount += 1
-            }
-            index ++
-            reverseIndex --
-        }
-        return amount > 2
+    fun getColumn(row: Int): Int {
+        return -row + 2
     }
 
     fun straightWin(smallField: MutableList<MutableList<Boolean>>): Boolean {
-        val index: Int = 0
-
-        while (index < 3) {
-            if (smallField[index].filter { b -> b }.count() > 2)
-                println()
+        return (0..2).any { row ->
+            smallField[row].filter { column ->
+                column
+            }.size > 2
+        } || (0..2).any { row ->
+            (0..2).filter { column ->
+                smallField[column][row]
+            }.size > 2
         }
-        return false
     }
 }

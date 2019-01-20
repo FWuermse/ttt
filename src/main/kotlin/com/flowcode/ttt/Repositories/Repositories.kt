@@ -18,5 +18,7 @@ interface MoveRepository : CrudRepository<Move, Long> {
     fun findAllByPlayerAndGame(player: Player, game: Game): List<Move>
     fun findAllByGame(game: Game): List<Move>
     fun findFirstByGameOrderByCreatedDesc(game: Game): Move
-
+    fun findAllByPlayerAndGameAndBoardRowAndBoardColumn(player: Player, game: Game, boardRow: Int, boardColumn: Int): List<Move>
+    fun findAllByGameAndBoardRowAndBoardColumn(game: Game, boardRow: Int, boardColumn: Int): List<Move>
+    fun findLastByGameOrderByCreatedDesc(game: Game): Move
 }
