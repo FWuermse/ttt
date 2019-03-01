@@ -11,6 +11,6 @@ data class Move(
         val boardColumn: Int,
         val fieldRow: Int,
         val fieldColumn: Int,
-        val created: LocalDateTime,
+        val created: LocalDateTime?,
         @Id @GeneratedValue val id: Long? = null
 )
