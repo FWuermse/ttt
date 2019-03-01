@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/move")
 class MoveController(val moveService: MoveService) {
 
-    @GetMapping("/")
+    @PostMapping("/")
     fun join(@RequestBody move: Move,
              @RequestParam(value = "playerId") playerId: String) =
             moveService.makeMove(playerId, move)
