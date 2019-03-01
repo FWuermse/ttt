@@ -6,6 +6,7 @@ import com.flowcode.ttt.Repositories.GameRepository
 import com.flowcode.ttt.Repositories.MoveRepository
 import org.springframework.stereotype.Service
 import java.lang.Exception
+import java.time.LocalDateTime
 import java.util.*
 
 @Service
@@ -15,15 +16,63 @@ class MoveService(val gameRepository: GameRepository, val moveRepository: MoveRe
         val game: Optional<Game> = gameRepository.findById(move.game.id!!)
         if (game.isPresent) {
             validatePlayer(playerId, game.get())
+            validateTurnSequence(playerId, game.get())
+            validatePossibleMove(move)
             validateMoveRedundancy(move)
             validateMoveInWonField(move)
             validateMoveInPermittedField(move)
+            moveRepository.save(move.copy(created = LocalDateTime.now()))
+            checkIfGameWon()
         } else
-            throw Exception("This game does not exist anymore. Please refresh your browser.")
+            throw Exception("This game does not exist anymore.")
     }
 
-    private fun validateMoveInPermittedField(move: Move) {
-        moveRepository.findLastByGameOrderByCreatedDesc(move.game)
+    private fun checkIfGameWon() {
+        println("Won")
+    }
+
+    fun validatePossibleMove(move: Move) {
+        if (move.boardRow.or(move.boardColumn).or(move.fieldRow).or(move.fieldColumn) !in (0..2)) {
+            throw Exception("We don't tolerate cheating! Please choose a valid field.")
+        }
+    }
+
+    fun validateTurnSequence(playerId: String, game: Game) {
+        if (moveRepository.findFirstByGameOrderByCreatedDesc(game).isPresent) {
+            if (moveRepository.findFirstByGameOrderByCreatedDesc(game).get().player.id == playerId) {
+                throw Exception("It's not your turn. Please wait for the other Player to move.")
+            }
+        } else {
+            if (playerId == game.firstPlayer.id) {
+                if (!firstPlayerHasX(game)) {
+                    throw Exception("It's not your turn. Please wait for the other Player to move.")
+                }
+            } else {
+                if (firstPlayerHasX(game)) {
+                    throw Exception("It's not your turn. Please wait for the other Player to move.")
+                }
+            }
+        }
+    }
+
+    fun firstPlayerHasX(game: Game): Boolean {
+        return game.firstPlayerPieceCode == 'X'
+    }
+
+    fun validateMoveInPermittedField(move: Move) {
+        if (moveRepository.findFirstByGameOrderByCreatedDesc(move.game).isPresent) {
+            val lastMove: Move = moveRepository.findFirstByGameOrderByCreatedDesc(move.game).get()
+            try {
+                validateMoveInWonField(lastMove)
+                if (!((lastMove.fieldRow == move.boardRow).and(lastMove.fieldColumn == move.boardColumn))) {
+                    throw Exception("Invalid field. Your move has to be in field ${lastMove.fieldRow+1} - ${lastMove.fieldColumn+1}")
+                }
+            } catch(e: Exception) {
+                if (!(e.message.equals("This field has already been won by your opponent") || e.message.equals("You already won this field"))) {
+                    throw e
+                }
+            }
+        }
     }
 
     fun validatePlayer(playerId: String, game: Game) {
