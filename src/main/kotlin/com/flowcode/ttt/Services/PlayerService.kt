@@ -27,4 +27,12 @@ class PlayerService(val playerRepository: PlayerRepository) {
 
     fun getPlayer(id: String): Player =
             playerRepository.findById(id).get()
+
+    fun addPlayedGame(player: Player) {
+        playerRepository.save(playerRepository.findById(player.id).get().copy(gamesPlayed = + 1))
+    }
+
+    fun addWonGame(player: Player) {
+        playerRepository.save(playerRepository.findById(player.id).get().copy(gamesWon = + 1))
+    }
 }

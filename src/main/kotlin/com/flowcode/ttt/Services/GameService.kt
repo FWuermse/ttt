@@ -42,4 +42,8 @@ class GameService(val gameRepository: GameRepository, val playerService: PlayerS
     fun getAll(): MutableIterable<Game> {
         return gameRepository.findAll()
     }
+
+    fun dissolve(game: Game, status: String) {
+        gameRepository.save(gameRepository.findById(game.id!!).get().copy(status = status))
+    }
 }
