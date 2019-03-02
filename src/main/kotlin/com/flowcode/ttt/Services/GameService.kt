@@ -24,8 +24,10 @@ class GameService(val gameRepository: GameRepository, val playerService: PlayerS
     fun addPlayer(playerId: String, gameId: Long) {
         val game = gameRepository.findById(gameId)
         if (game.isPresent)
-            if (game.get().secondPlayer != null && game.get().status == "pending") {
+            if (game.get().secondPlayer == null && game.get().status == "pending") {
                 gameRepository.save(game.get().copy(secondPlayer = playerService.getPlayer(playerId), status = "inprogress"))
+            } else {
+                throw Exception("This game is already full! Someone was faster.")
             }
     }
 
@@ -35,7 +37,7 @@ class GameService(val gameRepository: GameRepository, val playerService: PlayerS
             1 -> return 'X'
             0 -> return 'O'
         }
-        throw Exception("Random X or O generator failed")
+        throw Exception("Random X or O generator failed.")
     }
 
     fun getAll(): MutableIterable<Game> {
