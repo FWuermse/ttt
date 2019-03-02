@@ -1,14 +1,11 @@
 package com.flowcode.ttt.Services
 
 import com.flowcode.ttt.POJOs.Game
-import com.flowcode.ttt.POJOs.Move
 import com.flowcode.ttt.Repositories.GameRepository
 import com.flowcode.ttt.Repositories.MoveRepository
-import com.sun.org.apache.xpath.internal.operations.Bool
 import org.springframework.stereotype.Service
 import java.lang.Exception
 import java.util.*
-import kotlin.collections.ArrayList
 
 @Service
 class GameService(val gameRepository: GameRepository, val playerService: PlayerService, val moveRepository: MoveRepository) {
@@ -27,7 +24,9 @@ class GameService(val gameRepository: GameRepository, val playerService: PlayerS
     fun addPlayer(playerId: String, gameId: Long) {
         val game = gameRepository.findById(gameId)
         if (game.isPresent)
-            gameRepository.save(game.get().copy(secondPlayer = playerService.getPlayer(playerId), status = "inprogress"))
+            if (game.get().secondPlayer != null && game.get().status == "pending") {
+                gameRepository.save(game.get().copy(secondPlayer = playerService.getPlayer(playerId), status = "inprogress"))
+            }
     }
 
     private fun randomPieceCode(): Char {

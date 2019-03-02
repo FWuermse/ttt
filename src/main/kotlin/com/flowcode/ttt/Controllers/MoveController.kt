@@ -12,4 +12,8 @@ class MoveController(val moveService: MoveService) {
     fun join(@RequestBody move: Move,
              @RequestParam(value = "playerId") playerId: String) =
             moveService.makeMove(playerId, move)
+
+    @GetMapping("/")
+    fun getAll(@RequestParam(value = "gameId") gameId: Long) =
+            moveService.getAll(gameId)
 }

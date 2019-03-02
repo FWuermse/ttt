@@ -96,16 +96,16 @@ class MoveServiceTest(@Autowired val moveService: MoveService) {
         whenever(moveRepository.findAllByPlayerAndGameAndBoardRowAndBoardColumn(player1, game, 0, 0)).thenReturn(listOf(move1))
         whenever(moveRepository.findAllByGameAndBoardRowAndBoardColumn(game, 0, 0)).thenReturn(listOf(move1, move4, move8, move10))
 
-        assertThatExceptionOfType(Exception::class.java).isThrownBy { moveService.validateMoveInWonField(Move(player2, game, 0, 0, 0, 0, LocalDateTime.now())) }
-        assertThatExceptionOfType(Exception::class.java).isThrownBy { moveService.validateMoveInWonField(Move(player1, game, 0, 0, 0, 0, LocalDateTime.now())) }
+        assertThatExceptionOfType(Exception::class.java).isThrownBy { moveService.validateMoveInWonField(Move(player2, game, 0, 0, 0, 0, LocalDateTime.now()), player2) }
+        assertThatExceptionOfType(Exception::class.java).isThrownBy { moveService.validateMoveInWonField(Move(player1, game, 0, 0, 0, 0, LocalDateTime.now()), player1) }
         try {
-            moveService.validateMoveInWonField(Move(player2, game, 0, 0, 0, 0, LocalDateTime.now()))
+            moveService.validateMoveInWonField(Move(player2, game, 0, 0, 0, 0, LocalDateTime.now()), player2)
         } catch (e: Exception) {
             assertThat(e.message).isEqualTo("You already won this field")
         }
 
         try {
-            moveService.validateMoveInWonField(Move(player1, game, 0, 0, 0, 0, LocalDateTime.now()))
+            moveService.validateMoveInWonField(Move(player1, game, 0, 0, 0, 0, LocalDateTime.now()), player1)
         } catch (e: Exception) {
             assertThat(e.message).isEqualTo("This field has already been won by your opponent")
         }
@@ -136,7 +136,7 @@ class MoveServiceTest(@Autowired val moveService: MoveService) {
         whenever(moveRepository.findAllByGameAndBoardRowAndBoardColumn(game, 0, 1)).thenReturn(listOf(move2, move6, move7))
 
         try {
-            moveService.validateMoveInWonField(Move(player1, game, 0, 1, 0, 0, LocalDateTime.now()))
+            moveService.validateMoveInWonField(Move(player1, game, 0, 1, 0, 0, LocalDateTime.now()), player1)
         } catch (e: Exception) {
             assertThat(e).doesNotThrowAnyException()
         }
@@ -168,7 +168,7 @@ class MoveServiceTest(@Autowired val moveService: MoveService) {
         whenever(moveRepository.findFirstByGameOrderByCreatedDesc(game)).thenReturn(Optional.of(move10))
 
         try {
-            moveService.validateMoveInPermittedField(Move(player1, game, 0, 2, 0, 0, LocalDateTime.of(2019, 3, 1, 16, 1, 1, 1)))
+            moveService.validateMoveInPermittedField(Move(player1, game, 0, 2, 0, 0, LocalDateTime.of(2019, 3, 1, 16, 1, 1, 1)), player1)
         } catch (e: Exception) {
             assertThat(e).doesNotThrowAnyException()
         }
@@ -199,9 +199,9 @@ class MoveServiceTest(@Autowired val moveService: MoveService) {
         whenever(moveRepository.findAllByGameAndBoardRowAndBoardColumn(game, 0, 1)).thenReturn(listOf(move2, move6, move7))
         whenever(moveRepository.findFirstByGameOrderByCreatedDesc(game)).thenReturn(Optional.of(move10))
 
-        assertThatExceptionOfType(Exception::class.java).isThrownBy { moveService.validateMoveInPermittedField(Move(player1, game, 0, 1, 0, 0, LocalDateTime.of(2019, 3, 1, 16, 1, 1, 1))) }
+        assertThatExceptionOfType(Exception::class.java).isThrownBy { moveService.validateMoveInPermittedField(Move(player1, game, 0, 1, 0, 0, LocalDateTime.of(2019, 3, 1, 16, 1, 1, 1)), player1) }
         try {
-            moveService.validateMoveInPermittedField(Move(player1, game, 0, 1, 0, 0, LocalDateTime.of(2019, 3, 1, 16, 1, 1, 1)))
+            moveService.validateMoveInPermittedField(Move(player1, game, 0, 1, 0, 0, LocalDateTime.of(2019, 3, 1, 16, 1, 1, 1)), player1)
         } catch (e: Exception) {
             assertThat(e.message).isEqualTo("Invalid field. Your move has to be in field 1 - 3")
         }
@@ -222,7 +222,7 @@ class MoveServiceTest(@Autowired val moveService: MoveService) {
 
         // Mock other method calls
         whenever(moveRepository.findFirstByGameOrderByCreatedDesc(game)).thenReturn(Optional.of(move4))
-        whenever(move4.player.id).thenReturn("2")
+        whenever(move4.player!!.id).thenReturn("2")
 
         try {
             moveService.validateTurnSequence("1", game)
@@ -245,7 +245,7 @@ class MoveServiceTest(@Autowired val moveService: MoveService) {
 
         // Mock other method calls
         whenever(moveRepository.findFirstByGameOrderByCreatedDesc(game)).thenReturn(Optional.of(move3))
-        whenever(move3.player.id).thenReturn("1")
+        whenever(move3.player!!.id).thenReturn("1")
 
         try {
             moveService.validateTurnSequence("1", game)
@@ -291,5 +291,34 @@ class MoveServiceTest(@Autowired val moveService: MoveService) {
         } catch (e: Exception) {
             assertThat(e).doesNotThrowAnyException()
         }
+    }
+
+    @Test
+    fun `Validate Valid Field positive`() {
+        val player1: Player = Mockito.mock(Player::class.java)
+        val player2: Player = Mockito.mock(Player::class.java)
+        val game = Mockito.mock(Game::class.java)
+
+        try {
+            moveService.validatePossibleMove(Move(player1, game, 0, 1, 1, 2, LocalDateTime.of(2019, 3, 1, 14, 50, 58)))
+        } catch (e: Exception) {
+            assertThat(e).doesNotThrowAnyException()
+        }
+        try {
+            moveService.validatePossibleMove(Move(player1, game, 0, 0, 0, 1, LocalDateTime.of(2019, 3, 1, 14, 50, 58)))
+        } catch (e: Exception) {
+            assertThat(e).doesNotThrowAnyException()
+        }
+    }
+
+    @Test
+    fun `Validate Valid Field negative`() {
+        val player1: Player = Mockito.mock(Player::class.java)
+        val player2: Player = Mockito.mock(Player::class.java)
+        val game = Mockito.mock(Game::class.java)
+        assertThatExceptionOfType(Exception::class.java).isThrownBy { moveService.validatePossibleMove(Move(player2, game, 1, 1, 3, 2, LocalDateTime.of(2019, 3, 1, 15, 11, 34))) }
+        assertThatExceptionOfType(Exception::class.java).isThrownBy { moveService.validatePossibleMove(Move(player2, game, 5, 1, 2, 2, LocalDateTime.of(2019, 3, 1, 15, 11, 34))) }
+        assertThatExceptionOfType(Exception::class.java).isThrownBy { moveService.validatePossibleMove(Move(player2, game, 0, 1, 2, -9, LocalDateTime.of(2019, 3, 1, 15, 11, 34))) }
+
     }
 }

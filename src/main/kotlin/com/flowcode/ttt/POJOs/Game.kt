@@ -7,7 +7,7 @@ import javax.validation.constraints.NotEmpty
 @Entity
 data class Game(
         @NotEmpty @ManyToOne(cascade = [CascadeType.ALL]) @JoinColumn val firstPlayer: Player,
-        @ManyToOne(cascade = [CascadeType.ALL]) @JoinColumn val secondPlayer: Player?,
+        @ManyToOne @JoinColumn val secondPlayer: Player?,
         val status: String,
         val type: String,
         val firstPlayerPieceCode: Char,
