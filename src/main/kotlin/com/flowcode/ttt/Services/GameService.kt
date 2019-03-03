@@ -24,7 +24,7 @@ class GameService(val gameRepository: GameRepository, val playerService: PlayerS
     fun addPlayer(playerId: String, gameId: Long) {
         val game = gameRepository.findById(gameId)
         if (game.isPresent)
-            if (game.get().secondPlayer == null && game.get().status == "pending") {
+            if (game.get().secondPlayer == null && game.get().status == "pending" && game.get().firstPlayer.id != playerId) {
                 gameRepository.save(game.get().copy(secondPlayer = playerService.getPlayer(playerId), status = "inprogress"))
             } else {
                 throw Exception("This game is already full! Someone was faster.")
